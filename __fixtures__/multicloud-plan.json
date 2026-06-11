@@ -1,0 +1,15 @@
+{
+  "format_version": "1.2",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        { "address": "google_storage_bucket_iam_member.public", "mode": "managed", "type": "google_storage_bucket_iam_member", "name": "public", "values": { "bucket": "acme-gcs", "role": "roles/storage.objectViewer", "member": "allUsers" } },
+        { "address": "google_sql_database_instance.main", "mode": "managed", "type": "google_sql_database_instance", "name": "main", "values": { "name": "acme-sql", "settings": [ { "ip_configuration": [ { "ipv4_enabled": true, "authorized_networks": [ { "name": "any", "value": "0.0.0.0/0" } ] } ] } ] } },
+        { "address": "google_compute_firewall.ssh", "mode": "managed", "type": "google_compute_firewall", "name": "ssh", "values": { "name": "allow-ssh", "source_ranges": ["0.0.0.0/0"], "allow": [ { "protocol": "tcp", "ports": ["22"] } ] } },
+        { "address": "azurerm_storage_account.data", "mode": "managed", "type": "azurerm_storage_account", "name": "data", "values": { "name": "acmedata", "enable_https_traffic_only": false, "allow_nested_items_to_be_public": true } },
+        { "address": "azurerm_network_security_rule.rdp", "mode": "managed", "type": "azurerm_network_security_rule", "name": "rdp", "values": { "name": "allow-rdp", "access": "Allow", "direction": "Inbound", "protocol": "Tcp", "source_address_prefix": "*", "destination_port_range": "3389" } },
+        { "address": "kubernetes_deployment.api", "mode": "managed", "type": "kubernetes_deployment", "name": "api", "values": { "metadata": [ { "name": "api" } ], "spec": [ { "template": [ { "spec": [ { "host_network": true, "container": [ { "name": "api", "image": "acme/api", "security_context": [ { "privileged": true } ] } ] } ] } ] } ] } }
+      ]
+    }
+  }
+}

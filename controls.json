@@ -1,9 +1,9 @@
 {
   "_meta": {
     "name": "Trooth Pre-Flight Control Catalog",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "copyright": "Copyright (c) 2026 Trooth, LLC.",
-    "note": "Checks run against a resolved Terraform plan (terraform show -json). Each check maps a code-defined infrastructure control to recognized frameworks and ships a Fix-It remediation snippet. Advisory only — Trooth never applies changes; the engineer merges the suggested patch."
+    "note": "Checks run against the resolved intent of infrastructure-as-code (Terraform plan JSON, Pulumi preview JSON, or CloudFormation/CDK templates), normalized to a common resource shape. Each check maps a code-defined control to recognized frameworks and ships a Fix-It remediation. Advisory only — Trooth never applies changes; the engineer merges the suggested patch."
   },
   "checks": [
     {
@@ -11,7 +11,7 @@
       "title": "S3 bucket must enforce server-side encryption",
       "severity": "high",
       "resourceTypes": ["aws_s3_bucket"],
-      "frameworks": { "soc2": ["CC6.1", "CC6.7"], "iso27001": ["A.8.24"], "eu_ai_act": ["Art.15"] },
+      "frameworks": { "soc2": ["CC6.1", "CC6.7"], "iso27001": ["A.8.24"], "eu_ai_act": ["Art.15"], "nist_ai_rmf": ["MANAGE-2.2"], "hipaa": ["164.312(a)(2)(iv)"] },
       "rationale": "Unencrypted object storage exposes data at rest if the bucket is compromised.",
       "fix": "Add a aws_s3_bucket_server_side_encryption_configuration resource (AES256 or aws:kms) for this bucket."
     },
@@ -20,7 +20,7 @@
       "title": "S3 bucket must block public access",
       "severity": "critical",
       "resourceTypes": ["aws_s3_bucket", "aws_s3_bucket_public_access_block", "aws_s3_bucket_acl"],
-      "frameworks": { "soc2": ["CC6.1", "CC6.6"], "iso27001": ["A.5.15", "A.8.3"], "eu_ai_act": ["Art.15"] },
+      "frameworks": { "soc2": ["CC6.1", "CC6.6"], "iso27001": ["A.5.15", "A.8.3"], "eu_ai_act": ["Art.15"], "nist_ai_rmf": ["MANAGE-2.2"], "hipaa": ["164.312(a)(1)"] },
       "rationale": "Publicly readable/writable buckets are the #1 cause of cloud data breaches.",
       "fix": "Set ACL to private and add aws_s3_bucket_public_access_block with all four block_* flags = true."
     },
@@ -29,7 +29,7 @@
       "title": "RDS instance must be encrypted at rest",
       "severity": "high",
       "resourceTypes": ["aws_db_instance"],
-      "frameworks": { "soc2": ["CC6.1", "CC6.7"], "iso27001": ["A.8.24"], "eu_ai_act": ["Art.15"] },
+      "frameworks": { "soc2": ["CC6.1", "CC6.7"], "iso27001": ["A.8.24"], "eu_ai_act": ["Art.15"], "nist_ai_rmf": ["MANAGE-2.2"], "hipaa": ["164.312(a)(2)(iv)"] },
       "rationale": "Unencrypted databases expose all stored records if the storage layer is accessed.",
       "fix": "Set storage_encrypted = true (and optionally kms_key_id) on the aws_db_instance."
     },
@@ -38,7 +38,7 @@
       "title": "RDS instance must not be publicly accessible",
       "severity": "critical",
       "resourceTypes": ["aws_db_instance"],
-      "frameworks": { "soc2": ["CC6.1", "CC6.6"], "iso27001": ["A.8.20", "A.8.22"], "eu_ai_act": ["Art.15"] },
+      "frameworks": { "soc2": ["CC6.1", "CC6.6"], "iso27001": ["A.8.20", "A.8.22"], "eu_ai_act": ["Art.15"], "hipaa": ["164.312(a)(1)"] },
       "rationale": "A publicly reachable database is exposed to the entire internet.",
       "fix": "Set publicly_accessible = false and place the instance in private subnets."
     },
@@ -47,7 +47,7 @@
       "title": "EBS volume must be encrypted",
       "severity": "high",
       "resourceTypes": ["aws_ebs_volume"],
-      "frameworks": { "soc2": ["CC6.1", "CC6.7"], "iso27001": ["A.8.24"], "eu_ai_act": ["Art.15"] },
+      "frameworks": { "soc2": ["CC6.1", "CC6.7"], "iso27001": ["A.8.24"], "eu_ai_act": ["Art.15"], "hipaa": ["164.312(a)(2)(iv)"] },
       "rationale": "Unencrypted block storage exposes data at rest.",
       "fix": "Set encrypted = true on the aws_ebs_volume."
     },
@@ -56,7 +56,7 @@
       "title": "Security group must not expose SSH/RDP to the world",
       "severity": "critical",
       "resourceTypes": ["aws_security_group", "aws_security_group_rule"],
-      "frameworks": { "soc2": ["CC6.6"], "iso27001": ["A.8.20", "A.8.22"], "eu_ai_act": ["Art.15"] },
+      "frameworks": { "soc2": ["CC6.6"], "iso27001": ["A.8.20", "A.8.22"], "eu_ai_act": ["Art.15"], "hipaa": ["164.312(a)(1)"] },
       "rationale": "0.0.0.0/0 ingress on ports 22 (SSH) or 3389 (RDP) invites brute-force and lateral movement.",
       "fix": "Restrict the ingress CIDR to known admin ranges or a bastion/VPN; remove 0.0.0.0/0 on 22/3389."
     },
@@ -65,7 +65,7 @@
       "title": "IAM policy must not grant Action:* on Resource:*",
       "severity": "high",
       "resourceTypes": ["aws_iam_policy", "aws_iam_role_policy"],
-      "frameworks": { "soc2": ["CC6.1", "CC6.3"], "iso27001": ["A.8.2", "A.8.3"], "eu_ai_act": ["Art.15"] },
+      "frameworks": { "soc2": ["CC6.1", "CC6.3"], "iso27001": ["A.8.2", "A.8.3"], "eu_ai_act": ["Art.15"], "nist_ai_rmf": ["GOVERN-1.1"] },
       "rationale": "Wildcard admin grants violate least-privilege and turn any credential leak into full account compromise.",
       "fix": "Scope the policy to the specific actions and resource ARNs the workload needs."
     },
@@ -74,7 +74,7 @@
       "title": "Load balancer listener must use HTTPS/TLS",
       "severity": "medium",
       "resourceTypes": ["aws_lb_listener"],
-      "frameworks": { "soc2": ["CC6.7"], "iso27001": ["A.8.24"], "eu_ai_act": ["Art.15"] },
+      "frameworks": { "soc2": ["CC6.7"], "iso27001": ["A.8.24"], "eu_ai_act": ["Art.15"], "hipaa": ["164.312(e)(1)"] },
       "rationale": "Plain HTTP listeners transmit data unencrypted in transit.",
       "fix": "Set protocol = \"HTTPS\" (port 443) with an ACM certificate_arn, and redirect HTTP→HTTPS."
     },
@@ -83,9 +83,72 @@
       "title": "CloudWatch log group should be encrypted",
       "severity": "low",
       "resourceTypes": ["aws_cloudwatch_log_group"],
-      "frameworks": { "soc2": ["CC6.7", "CC7.2"], "iso27001": ["A.8.15", "A.8.24"], "eu_ai_act": ["Art.12"] },
+      "frameworks": { "soc2": ["CC6.7", "CC7.2"], "iso27001": ["A.8.15", "A.8.24"], "eu_ai_act": ["Art.12"], "hipaa": ["164.312(b)"] },
       "rationale": "Logs can contain sensitive data and should be encrypted with a KMS key.",
       "fix": "Set kms_key_id on the aws_cloudwatch_log_group."
+    },
+    {
+      "id": "GCP_STORAGE_NOT_PUBLIC",
+      "title": "GCS bucket must not be public (no allUsers/allAuthenticatedUsers)",
+      "severity": "critical",
+      "resourceTypes": ["google_storage_bucket_iam_member", "google_storage_bucket_iam_binding", "google_storage_bucket"],
+      "frameworks": { "soc2": ["CC6.1", "CC6.6"], "iso27001": ["A.5.15", "A.8.3"], "eu_ai_act": ["Art.15"], "hipaa": ["164.312(a)(1)"] },
+      "rationale": "Granting allUsers or allAuthenticatedUsers makes a GCS bucket world-readable.",
+      "fix": "Remove allUsers/allAuthenticatedUsers IAM members and enable uniform bucket-level access + public access prevention."
+    },
+    {
+      "id": "GCP_SQL_NOT_PUBLIC",
+      "title": "Cloud SQL must not be publicly reachable",
+      "severity": "critical",
+      "resourceTypes": ["google_sql_database_instance"],
+      "frameworks": { "soc2": ["CC6.1", "CC6.6"], "iso27001": ["A.8.20", "A.8.22"], "eu_ai_act": ["Art.15"], "hipaa": ["164.312(a)(1)"] },
+      "rationale": "Enabling a public IPv4 with an authorized network of 0.0.0.0/0 exposes the database to the internet.",
+      "fix": "Set ipv4_enabled = false (use private IP) or restrict authorized_networks; never authorize 0.0.0.0/0."
+    },
+    {
+      "id": "GCP_FIREWALL_NO_OPEN_ADMIN",
+      "title": "GCP firewall must not open SSH/RDP to 0.0.0.0/0",
+      "severity": "critical",
+      "resourceTypes": ["google_compute_firewall"],
+      "frameworks": { "soc2": ["CC6.6"], "iso27001": ["A.8.20"], "eu_ai_act": ["Art.15"] },
+      "rationale": "source_ranges of 0.0.0.0/0 on ports 22/3389 exposes admin access to the world.",
+      "fix": "Restrict source_ranges to known admin CIDRs; remove 0.0.0.0/0 on 22/3389."
+    },
+    {
+      "id": "AZURE_STORAGE_SECURE",
+      "title": "Azure Storage must require HTTPS and block public blobs",
+      "severity": "high",
+      "resourceTypes": ["azurerm_storage_account"],
+      "frameworks": { "soc2": ["CC6.1", "CC6.7"], "iso27001": ["A.8.24"], "eu_ai_act": ["Art.15"], "hipaa": ["164.312(e)(1)"] },
+      "rationale": "Storage accounts that allow public blob access or non-HTTPS traffic expose data at rest and in transit.",
+      "fix": "Set enable_https_traffic_only = true and allow_blob_public_access = false (or allow_nested_items_to_be_public = false)."
+    },
+    {
+      "id": "AZURE_NSG_NO_OPEN_ADMIN",
+      "title": "Azure NSG rule must not open SSH/RDP from the internet",
+      "severity": "critical",
+      "resourceTypes": ["azurerm_network_security_rule"],
+      "frameworks": { "soc2": ["CC6.6"], "iso27001": ["A.8.20"], "eu_ai_act": ["Art.15"] },
+      "rationale": "An inbound Allow rule from source * / Internet to port 22 or 3389 exposes admin access.",
+      "fix": "Restrict source_address_prefix to known ranges; do not Allow * / Internet on 22/3389."
+    },
+    {
+      "id": "K8S_NO_PRIVILEGED",
+      "title": "Kubernetes containers must not run privileged",
+      "severity": "high",
+      "resourceTypes": ["kubernetes_deployment", "kubernetes_pod", "kubernetes_deployment_v1", "kubernetes_pod_v1"],
+      "frameworks": { "soc2": ["CC6.1", "CC6.6"], "iso27001": ["A.8.2"], "eu_ai_act": ["Art.15"], "nist_ai_rmf": ["MANAGE-2.2"] },
+      "rationale": "Privileged containers can escape to the host node.",
+      "fix": "Set security_context.privileged = false and drop unnecessary Linux capabilities."
+    },
+    {
+      "id": "K8S_NO_HOST_NETWORK",
+      "title": "Kubernetes pods must not use host networking",
+      "severity": "medium",
+      "resourceTypes": ["kubernetes_deployment", "kubernetes_pod", "kubernetes_deployment_v1", "kubernetes_pod_v1"],
+      "frameworks": { "soc2": ["CC6.6"], "iso27001": ["A.8.20"], "eu_ai_act": ["Art.15"] },
+      "rationale": "host_network gives the pod access to the node's network namespace, bypassing network policy.",
+      "fix": "Set host_network = false in the pod spec."
     }
   ]
 }

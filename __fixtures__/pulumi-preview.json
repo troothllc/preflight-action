@@ -1,0 +1,6 @@
+{
+  "steps": [
+    { "op": "create", "newState": { "urn": "urn:pulumi:prod::app::aws:rds/instance:Instance::main", "type": "aws:rds/instance:Instance", "id": "main", "inputs": { "storageEncrypted": false, "publiclyAccessible": true, "engine": "postgres" } } },
+    { "op": "create", "newState": { "urn": "urn:pulumi:prod::app::aws:s3/bucket:Bucket::logs", "type": "aws:s3/bucket:Bucket", "id": "logs", "inputs": { "bucket": "acme-logs", "acl": "public-read" } } }
+  ]
+}
