@@ -1,0 +1,55 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.7.0",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_s3_bucket.public_logs",
+          "mode": "managed", "type": "aws_s3_bucket", "name": "public_logs",
+          "values": { "bucket": "acme-public-logs", "acl": "public-read" }
+        },
+        {
+          "address": "aws_s3_bucket.secure_data",
+          "mode": "managed", "type": "aws_s3_bucket", "name": "secure_data",
+          "values": { "bucket": "acme-secure-data", "server_side_encryption_configuration": [ { "rule": [ { "apply_server_side_encryption_by_default": [ { "sse_algorithm": "aws:kms" } ] } ] } ] }
+        },
+        {
+          "address": "aws_db_instance.main",
+          "mode": "managed", "type": "aws_db_instance", "name": "main",
+          "values": { "identifier": "acme-main-db", "storage_encrypted": false, "publicly_accessible": true, "engine": "postgres" }
+        },
+        {
+          "address": "aws_db_instance.replica",
+          "mode": "managed", "type": "aws_db_instance", "name": "replica",
+          "values": { "identifier": "acme-replica-db", "storage_encrypted": true, "publicly_accessible": false, "engine": "postgres" }
+        },
+        {
+          "address": "aws_ebs_volume.scratch",
+          "mode": "managed", "type": "aws_ebs_volume", "name": "scratch",
+          "values": { "availability_zone": "us-east-1a", "size": 100, "encrypted": false }
+        },
+        {
+          "address": "aws_security_group.web",
+          "mode": "managed", "type": "aws_security_group", "name": "web",
+          "values": { "name": "web-sg", "ingress": [ { "from_port": 22, "to_port": 22, "protocol": "tcp", "cidr_blocks": ["0.0.0.0/0"] }, { "from_port": 443, "to_port": 443, "protocol": "tcp", "cidr_blocks": ["0.0.0.0/0"] } ] }
+        },
+        {
+          "address": "aws_iam_policy.admin",
+          "mode": "managed", "type": "aws_iam_policy", "name": "admin",
+          "values": { "name": "god-mode", "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"*\",\"Resource\":\"*\"}]}" }
+        },
+        {
+          "address": "aws_lb_listener.web_http",
+          "mode": "managed", "type": "aws_lb_listener", "name": "web_http",
+          "values": { "port": 80, "protocol": "HTTP" }
+        },
+        {
+          "address": "aws_cloudwatch_log_group.app",
+          "mode": "managed", "type": "aws_cloudwatch_log_group", "name": "app",
+          "values": { "name": "/acme/app", "retention_in_days": 30 }
+        }
+      ]
+    }
+  }
+}

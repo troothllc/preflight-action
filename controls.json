@@ -1,0 +1,91 @@
+{
+  "_meta": {
+    "name": "Trooth Pre-Flight Control Catalog",
+    "version": "1.0.0",
+    "copyright": "Copyright (c) 2026 Trooth, LLC.",
+    "note": "Checks run against a resolved Terraform plan (terraform show -json). Each check maps a code-defined infrastructure control to recognized frameworks and ships a Fix-It remediation snippet. Advisory only — Trooth never applies changes; the engineer merges the suggested patch."
+  },
+  "checks": [
+    {
+      "id": "S3_ENCRYPTION_AT_REST",
+      "title": "S3 bucket must enforce server-side encryption",
+      "severity": "high",
+      "resourceTypes": ["aws_s3_bucket"],
+      "frameworks": { "soc2": ["CC6.1", "CC6.7"], "iso27001": ["A.8.24"], "eu_ai_act": ["Art.15"] },
+      "rationale": "Unencrypted object storage exposes data at rest if the bucket is compromised.",
+      "fix": "Add a aws_s3_bucket_server_side_encryption_configuration resource (AES256 or aws:kms) for this bucket."
+    },
+    {
+      "id": "S3_PUBLIC_ACCESS",
+      "title": "S3 bucket must block public access",
+      "severity": "critical",
+      "resourceTypes": ["aws_s3_bucket", "aws_s3_bucket_public_access_block", "aws_s3_bucket_acl"],
+      "frameworks": { "soc2": ["CC6.1", "CC6.6"], "iso27001": ["A.5.15", "A.8.3"], "eu_ai_act": ["Art.15"] },
+      "rationale": "Publicly readable/writable buckets are the #1 cause of cloud data breaches.",
+      "fix": "Set ACL to private and add aws_s3_bucket_public_access_block with all four block_* flags = true."
+    },
+    {
+      "id": "RDS_ENCRYPTION_AT_REST",
+      "title": "RDS instance must be encrypted at rest",
+      "severity": "high",
+      "resourceTypes": ["aws_db_instance"],
+      "frameworks": { "soc2": ["CC6.1", "CC6.7"], "iso27001": ["A.8.24"], "eu_ai_act": ["Art.15"] },
+      "rationale": "Unencrypted databases expose all stored records if the storage layer is accessed.",
+      "fix": "Set storage_encrypted = true (and optionally kms_key_id) on the aws_db_instance."
+    },
+    {
+      "id": "RDS_NOT_PUBLIC",
+      "title": "RDS instance must not be publicly accessible",
+      "severity": "critical",
+      "resourceTypes": ["aws_db_instance"],
+      "frameworks": { "soc2": ["CC6.1", "CC6.6"], "iso27001": ["A.8.20", "A.8.22"], "eu_ai_act": ["Art.15"] },
+      "rationale": "A publicly reachable database is exposed to the entire internet.",
+      "fix": "Set publicly_accessible = false and place the instance in private subnets."
+    },
+    {
+      "id": "EBS_ENCRYPTION_AT_REST",
+      "title": "EBS volume must be encrypted",
+      "severity": "high",
+      "resourceTypes": ["aws_ebs_volume"],
+      "frameworks": { "soc2": ["CC6.1", "CC6.7"], "iso27001": ["A.8.24"], "eu_ai_act": ["Art.15"] },
+      "rationale": "Unencrypted block storage exposes data at rest.",
+      "fix": "Set encrypted = true on the aws_ebs_volume."
+    },
+    {
+      "id": "SG_NO_OPEN_ADMIN",
+      "title": "Security group must not expose SSH/RDP to the world",
+      "severity": "critical",
+      "resourceTypes": ["aws_security_group", "aws_security_group_rule"],
+      "frameworks": { "soc2": ["CC6.6"], "iso27001": ["A.8.20", "A.8.22"], "eu_ai_act": ["Art.15"] },
+      "rationale": "0.0.0.0/0 ingress on ports 22 (SSH) or 3389 (RDP) invites brute-force and lateral movement.",
+      "fix": "Restrict the ingress CIDR to known admin ranges or a bastion/VPN; remove 0.0.0.0/0 on 22/3389."
+    },
+    {
+      "id": "IAM_NO_WILDCARD_ADMIN",
+      "title": "IAM policy must not grant Action:* on Resource:*",
+      "severity": "high",
+      "resourceTypes": ["aws_iam_policy", "aws_iam_role_policy"],
+      "frameworks": { "soc2": ["CC6.1", "CC6.3"], "iso27001": ["A.8.2", "A.8.3"], "eu_ai_act": ["Art.15"] },
+      "rationale": "Wildcard admin grants violate least-privilege and turn any credential leak into full account compromise.",
+      "fix": "Scope the policy to the specific actions and resource ARNs the workload needs."
+    },
+    {
+      "id": "LB_HTTPS_IN_TRANSIT",
+      "title": "Load balancer listener must use HTTPS/TLS",
+      "severity": "medium",
+      "resourceTypes": ["aws_lb_listener"],
+      "frameworks": { "soc2": ["CC6.7"], "iso27001": ["A.8.24"], "eu_ai_act": ["Art.15"] },
+      "rationale": "Plain HTTP listeners transmit data unencrypted in transit.",
+      "fix": "Set protocol = \"HTTPS\" (port 443) with an ACM certificate_arn, and redirect HTTP→HTTPS."
+    },
+    {
+      "id": "CLOUDWATCH_LOG_ENCRYPTION",
+      "title": "CloudWatch log group should be encrypted",
+      "severity": "low",
+      "resourceTypes": ["aws_cloudwatch_log_group"],
+      "frameworks": { "soc2": ["CC6.7", "CC7.2"], "iso27001": ["A.8.15", "A.8.24"], "eu_ai_act": ["Art.12"] },
+      "rationale": "Logs can contain sensitive data and should be encrypted with a KMS key.",
+      "fix": "Set kms_key_id on the aws_cloudwatch_log_group."
+    }
+  ]
+}

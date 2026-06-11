@@ -1,0 +1,42 @@
+# Trooth Pre-Flight — GitHub Action (composite). No marketplace listing required.
+# Posts a Compliance Delta as a PR comment + job summary using the built-in GITHUB_TOKEN.
+name: "Trooth Pre-Flight"
+description: "Compliance-as-Code: scan your Terraform plan against SOC 2 / ISO 27001 / EU AI Act before merge. Advisory."
+branding:
+  icon: "shield"
+  color: "green"
+inputs:
+  plan-json:
+    description: "Path to a `terraform show -json` plan file."
+    required: true
+  strict:
+    description: "If 'true', fail the check when verdict is 'fail'. Default advisory (never blocks)."
+    required: false
+    default: "false"
+  comment:
+    description: "If 'true', post/update a PR comment with the Compliance Delta."
+    required: false
+    default: "true"
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        set -e
+        ACTION_DIR="${{ github.action_path }}"
+        node "$ACTION_DIR/cli.mjs" "${{ inputs.plan-json }}" --md > preflight.md || true
+        node "$ACTION_DIR/cli.mjs" "${{ inputs.plan-json }}" --json > preflight.json || true
+        # Job summary (always)
+        cat preflight.md >> "$GITHUB_STEP_SUMMARY"
+        # PR comment (on pull_request events)
+        if [ "${{ inputs.comment }}" = "true" ] && [ -n "${{ github.event.pull_request.number }}" ]; then
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file preflight.md --repo "${{ github.repository }}" || true
+        fi
+        # Optional CI gate
+        VERDICT=$(node -e "console.log(JSON.parse(require('fs').readFileSync('preflight.json','utf8')).verdict)")
+        if [ "${{ inputs.strict }}" = "true" ] && [ "$VERDICT" = "fail" ]; then
+          echo "::error::Trooth Pre-Flight verdict: fail"; exit 1
+        fi
+        echo "Trooth Pre-Flight verdict: $VERDICT (advisory)"

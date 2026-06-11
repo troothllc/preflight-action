@@ -1,0 +1,26 @@
+# Drop this in a customer repo at .github/workflows/trooth-preflight.yml
+# Runs Trooth Pre-Flight on every PR that touches Terraform. No cloud credentials needed.
+name: Trooth Pre-Flight
+on:
+  pull_request:
+    paths: ["**/*.tf", "**/*.tf.json"]
+permissions:
+  contents: read
+  pull-requests: write   # to post the Compliance Delta comment
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - name: Generate plan JSON (no apply, no cloud creds needed for plan-only on most setups)
+        run: |
+          terraform init -backend=false
+          terraform plan -out tf.plan || true
+          terraform show -json tf.plan > plan.json
+      - name: Trooth Pre-Flight
+        uses: trooth/preflight-action@v1   # or: ./preflight  (vendored)
+        with:
+          plan-json: plan.json
+          comment: "true"
+          strict: "false"   # advisory; set "true" to gate merges

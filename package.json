@@ -1,0 +1,41 @@
+{
+  "name": "trooth-preflight",
+  "version": "1.0.0",
+  "description": "Compliance-as-Code: scan a Terraform plan against SOC 2 / ISO 27001 / EU AI Act before merge. Advisory — Trooth never applies changes.",
+  "type": "module",
+  "bin": {
+    "trooth-preflight": "cli.mjs"
+  },
+  "exports": {
+    ".": "./engine.mjs"
+  },
+  "files": [
+    "cli.mjs",
+    "engine.mjs",
+    "format.mjs",
+    "controls.json",
+    "action.yml",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node test.mjs"
+  },
+  "keywords": [
+    "compliance",
+    "compliance-as-code",
+    "soc2",
+    "iso27001",
+    "eu-ai-act",
+    "terraform",
+    "iac",
+    "policy-as-code",
+    "shift-left",
+    "trooth"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://trooth.co",
+  "author": "Trooth, LLC",
+  "engines": {
+    "node": ">=18"
+  }
+}
