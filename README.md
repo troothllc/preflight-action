@@ -29,7 +29,7 @@ jobs:
           terraform init -backend=false
           terraform plan -out tf.plan || true
           terraform show -json tf.plan > plan.json
-      - uses: trooth/preflight-action@v1
+      - uses: dheggietrooth/preflight-action@v1
         with:
           plan-json: plan.json
           comment: "true"     # post the Compliance Delta as a PR comment
