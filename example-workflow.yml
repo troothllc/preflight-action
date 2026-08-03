@@ -19,7 +19,7 @@ jobs:
           terraform plan -out tf.plan || true
           terraform show -json tf.plan > plan.json
       - name: Trooth Pre-Flight
-        uses: dheggietrooth/preflight-action@v1   # or: ./preflight  (vendored)
+        uses: troothllc/preflight-action@v1   # or: ./preflight  (vendored)
         with:
           plan-json: plan.json
           comment: "true"
