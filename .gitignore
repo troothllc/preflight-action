@@ -1,0 +1,40 @@
+# Secrets and credentials (never commit these)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_dsa
+credentials.json
+*service-account*.json
+.npmrc
+.pypirc
+.netrc
+
+# Terraform state and vars (can contain secrets)
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+!example.tfvars
+plan.json
+tf.plan
+
+# Node / build output
+node_modules/
+dist/
+build/
+coverage/
+npm-debug.log*
+yarn-error.log*
+*.tsbuildinfo
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+*.log
