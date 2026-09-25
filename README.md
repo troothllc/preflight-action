@@ -1,3 +1,5 @@
+> **Retired.** Trooth Pre-Flight is no longer offered, and this Action is archived and read-only. It is kept so that a workflow which still references it fails with an explanation instead of a missing repository. Trooth operates the Trooth Network, one public, signed, machine-readable record per company: see [trooth.co](https://trooth.co) and [troothllc](https://github.com/troothllc).
+
 # Trooth Pre-Flight
 
 Catch security and compliance gaps in your infrastructure plan inside the **pull request**, before code reaches production. Trooth Pre-Flight reads the **declared intent** of your infrastructure (a `terraform show -json` plan) against **SOC 2, ISO 27001, and the EU AI Act**, and returns a Compliance Delta with a one-click Fix-It on every finding.
