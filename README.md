@@ -1,6 +1,34 @@
-> **Retired.** Trooth Pre-Flight is no longer offered, and this Action is archived and read-only. It is kept so that a workflow which still references it fails with an explanation instead of a missing repository. Trooth operates the Trooth Network, one public, signed, machine-readable record per company: see [trooth.co](https://trooth.co) and [troothllc](https://github.com/troothllc).
+> **Retired.** Trooth Pre-Flight is no longer offered, and this repository is archived and read-only. Its scanning code has been removed from `main`, and the `v1` and `v1.1` tags point at a replacement `action.yml` that runs nothing: it writes a notice to the job summary, passes with a warning, or fails when `strict: "true"` was set, because the gate that input asked for no longer exists. It reads none of its inputs into shell text and posts no comment. The code as it was is in the history, at commit `6037f2b` and before.
+>
+> **What replaced it.** [`troothllc/trooth-action`](https://github.com/troothllc/trooth-action) reads what infrastructure declares and reports counts, with no verdict and no standard. Pin it by commit.
+>
+> Trooth operates the Trooth Network, one public, machine-readable record per company: see [trooth.co](https://trooth.co).
 
-# Trooth Pre-Flight
+## Migrating
+
+Replace
+
+```yaml
+- uses: troothllc/preflight-action@v1
+  with:
+    plan-json: plan.json
+```
+
+with
+
+```yaml
+- uses: troothllc/trooth-action@<full commit SHA>  # v1
+  with:
+    path: .
+```
+
+`trooth-action` reads `.tf`, `.tf.json`, plan JSON, Kubernetes YAML and Dockerfiles, writes counts to the job summary, needs only `contents: read`, and sends nothing anywhere. It does not map anything to SOC 2, ISO 27001 or the EU AI Act.
+
+## What this repository used to say
+
+The text below is the retired README, kept as a record. It describes a product that is no longer offered; none of it is current.
+
+### Trooth Pre-Flight (retired)
 
 Catch security and compliance gaps in your infrastructure plan inside the **pull request**, before code reaches production. Trooth Pre-Flight reads the **declared intent** of your infrastructure (a `terraform show -json` plan) against **SOC 2, ISO 27001, and the EU AI Act**, and returns a Compliance Delta with a one-click Fix-It on every finding.
 
